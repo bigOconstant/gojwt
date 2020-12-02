@@ -1,0 +1,18 @@
+
+version: '3.4'
+services:
+  go-jwt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - USERNAME=caleb
+
+    hostname: 'Barbarian'
+    environment: 
+      - SECRETKEY="FISHSAUCE"
+    
+    volumes:
+      - ./:/go/src/github.com/gojwt/
+    ports: 
+      - 3000:3000
