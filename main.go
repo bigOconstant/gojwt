@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gojwt/server"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -15,4 +17,8 @@ func main() {
 	})
 	tokenString, err := token.SignedString([]byte("ducksauce"))
 	fmt.Println(tokenString, err)
+	var i server.ServerI = server.Server{}.NewServer()
+	i.InitDataBase()
+
+	i.GetConnection()
 }

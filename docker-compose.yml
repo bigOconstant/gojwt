@@ -10,9 +10,32 @@ services:
 
     hostname: 'Barbarian'
     environment: 
-      - SECRETKEY="FISHSAUCE"
-    
+      - SECRETKEY=FISHSAUCE
+      - PGPASSWORD=password123
+      - PGUSERNAME=postgres
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDB=postgres
+
     volumes:
       - ./:/go/src/github.com/gojwt/
     ports: 
       - 3000:3000
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+        - 8091:8080
+
+  postgres:
+      image: postgres
+      restart: always
+      ports:
+      - "5432:5432"
+      environment:
+         POSTGRES_PASSWORD: "password123"
+      #volumes:
+      # - ./postgres/:/sqlfiles/
+      # - /var/postgresql/data:/var/lib/postgresql/data
+
