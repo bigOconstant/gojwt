@@ -10,14 +10,9 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-//ServerI Interface to data Access Layer
-type ServerI interface {
-	GetConnection() (conn *pgx.Conn, err error)
-	Init() (err error)
-}
+//Postgres Implementation of ServerI Data Access Layer
 
-//Server Implementation of Postgres Data Access Layer
-type Server struct {
+type Postgres struct {
 	Host     string
 	Database string
 	UserName string
@@ -27,18 +22,18 @@ type Server struct {
 }
 
 //GetConnection Gets connection to postgres
-func (s Server) GetConnection() (conn *pgx.Conn, err error) {
+func (s Postgres) GetConnection() (conn *pgx.Conn, err error) {
 	databaseurl := "postgresql://" + s.UserName + ":" + s.Password + "@" + s.Host + ":" + s.Port + "/" + s.Database
 	return pgx.Connect(context.Background(), databaseurl)
 }
 
 //getConnectionNoDatabase Gets connection to postgres without specifying database
-func (s Server) getConnectionNoDatabase() (conn *pgx.Conn, err error) {
+func (s Postgres) getConnectionNoDatabase() (conn *pgx.Conn, err error) {
 	databaseurl := "postgresql://" + s.UserName + ":" + s.Password + "@" + s.Host + ":" + s.Port
 	return pgx.Connect(context.Background(), databaseurl)
 }
 
-func (self *Server) Init() (err error) {
+func (self *Postgres) Init() (err error) {
 	self.Password = os.Getenv("PGPASSWORD")
 	self.UserName = os.Getenv("PGUSERNAME")
 	self.Host = os.Getenv("PGHOST")
@@ -55,7 +50,7 @@ func (self *Server) Init() (err error) {
 }
 
 //initDataBase Responsible for initializing Database
-func (s *Server) initDataBase() {
+func (s *Postgres) initDataBase() {
 	databases := s.getDatabases()
 
 	if val, ok := databases["authdatabase"]; ok {
@@ -87,7 +82,7 @@ func (s *Server) initDataBase() {
 
 }
 
-func (s *Server) initTables() {
+func (s *Postgres) initTables() {
 	tableNames := s.getTables()
 	if val, ok := tableNames["users"]; ok {
 		fmt.Println("users table found", val)
@@ -146,7 +141,7 @@ func (s *Server) initTables() {
 	}
 }
 
-func (s *Server) getDatabases() map[string]bool {
+func (s *Postgres) getDatabases() map[string]bool {
 	var names map[string]bool = make(map[string]bool)
 	// Don't use connection pool, because we havn't set it up yet
 	conn, err := s.getConnectionNoDatabase()
@@ -177,7 +172,7 @@ func (s *Server) getDatabases() map[string]bool {
 	return names
 }
 
-func (s *Server) getTables() map[string]bool {
+func (s *Postgres) getTables() map[string]bool {
 	var names map[string]bool = make(map[string]bool)
 	conn, err := s.Pool.Acquire(context.Background())
 	//conn, err := s.getConnectionNoDatabase()

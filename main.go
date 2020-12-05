@@ -17,7 +17,7 @@ func main() {
 	})
 	tokenString, err := token.SignedString([]byte("ducksauce"))
 	fmt.Println(tokenString, err)
-	var S = server.Server{}
+	var S = server.Postgres{}
 	var i server.ServerI = &S
 	i.Init()
 	//i.InitDataBase()
