@@ -206,14 +206,6 @@ func (s *Postgres) getTables() map[string]bool {
 	return names
 }
 
-/*
-
-Id       string      `json:"id"`
-	Username string      `json:"username"`
-	Email    string      `json:"email"`
-	Data     interface{} `json:"data,omitempty"` //Unstructured jsonb data. What ever someone wants to store.
-}
-*/
 func (s *Postgres) CreateUser(usr *models.User) (err error) {
 	conn, err := s.Pool.Acquire(context.Background())
 
