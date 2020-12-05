@@ -44,6 +44,7 @@ func (self *Server) Init() (err error) {
 	self.Host = os.Getenv("PGHOST")
 	self.Database = os.Getenv("PGDB")
 	self.Port = os.Getenv("PGPORT")
+	fmt.Println("password:", self.Password)
 	self.initDataBase()
 	databaseurl := "postgresql://" + self.UserName + ":" + self.Password + "@" + self.Host + ":" + self.Port + "/" + self.Database
 	self.Pool, err = pgxpool.Connect(context.Background(), databaseurl)
