@@ -89,9 +89,9 @@ func (s *Server) initDataBase() {
 func (s *Server) initTables() {
 	tableNames := s.getTables()
 	if val, ok := tableNames["users"]; ok {
-		fmt.Println("database found", val)
+		fmt.Println("users table found", val)
 	} else {
-		fmt.Println("Database not found")
+		fmt.Println("users table not found")
 		query, err := ioutil.ReadFile("sqlFiles/CreateUserTable.sql")
 		if err != nil {
 			fmt.Println("error reading in file")
@@ -111,6 +111,35 @@ func (s *Server) initTables() {
 			fmt.Println("Error creating User table")
 		} else {
 			fmt.Println("Success creating User table")
+		}
+
+	}
+
+	if val, ok := tableNames["tokens"]; ok {
+		fmt.Println("tokens table found", val)
+	} else {
+		fmt.Println("tokens table not found")
+		query, err := ioutil.ReadFile("sqlFiles/CreateTokenTable.sql")
+		if err != nil {
+			fmt.Println("error reading in file")
+			return
+		}
+
+		conn, err := s.GetConnection()
+		if err != nil {
+			fmt.Println("error getting connection")
+			return
+		}
+		defer conn.Close(context.Background())
+
+		_, err = conn.Exec(context.Background(), string(query))
+
+		if err != nil {
+
+			fmt.Println("Error creating token table")
+			fmt.Println(err)
+		} else {
+			fmt.Println("Success creating token table")
 		}
 
 	}
