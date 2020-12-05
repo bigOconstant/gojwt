@@ -22,12 +22,6 @@ services:
     ports: 
       - 3000:3000
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-        - 8091:8080
-
   postgres:
       image: postgres
       restart: always
