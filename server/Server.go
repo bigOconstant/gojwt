@@ -7,13 +7,13 @@ import (
 	"os"
 
 	pgx "github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 //ServerI Interface to data Access Layer
 type ServerI interface {
-	NewServer() ServerI
 	GetConnection() (conn *pgx.Conn, err error)
-	InitDataBase()
+	Init() (err error)
 }
 
 //Server Implementation of Postgres Data Access Layer
@@ -23,6 +23,7 @@ type Server struct {
 	UserName string
 	Password string
 	Port     string
+	Pool     *pgxpool.Pool
 }
 
 //GetConnection Gets connection to postgres
@@ -37,8 +38,23 @@ func (s Server) getConnectionNoDatabase() (conn *pgx.Conn, err error) {
 	return pgx.Connect(context.Background(), databaseurl)
 }
 
-//InitDataBase Responsible for initializing Database
-func (s Server) InitDataBase() {
+func (self *Server) Init() (err error) {
+	self.Password = os.Getenv("PGPASSWORD")
+	self.UserName = os.Getenv("PGUSERNAME")
+	self.Host = os.Getenv("PGHOST")
+	self.Database = os.Getenv("PGDB")
+	self.Port = os.Getenv("PGPORT")
+	self.initDataBase()
+	databaseurl := "postgresql://" + self.UserName + ":" + self.Password + "@" + self.Host + ":" + self.Port + "/" + self.Database
+	self.Pool, err = pgxpool.Connect(context.Background(), databaseurl)
+	if err == nil {
+		self.initTables()
+	}
+	return err
+}
+
+//initDataBase Responsible for initializing Database
+func (s *Server) initDataBase() {
 	databases := s.getDatabases()
 
 	if val, ok := databases["authdatabase"]; ok {
@@ -50,8 +66,8 @@ func (s Server) InitDataBase() {
 			fmt.Println("error reading in file")
 			return
 		}
-
-		conn, err := s.GetConnection()
+		// Don't use connection pool, it's not set up yet
+		conn, err := s.getConnectionNoDatabase()
 		if err != nil {
 			fmt.Println("error getting connection")
 			return
@@ -70,8 +86,39 @@ func (s Server) InitDataBase() {
 
 }
 
-func (s Server) getDatabases() map[string]bool {
+func (s *Server) initTables() {
+	tableNames := s.getTables()
+	if val, ok := tableNames["users"]; ok {
+		fmt.Println("database found", val)
+	} else {
+		fmt.Println("Database not found")
+		query, err := ioutil.ReadFile("sqlFiles/CreateUserTable.sql")
+		if err != nil {
+			fmt.Println("error reading in file")
+			return
+		}
+
+		conn, err := s.GetConnection()
+		if err != nil {
+			fmt.Println("error getting connection")
+			return
+		}
+		defer conn.Close(context.Background())
+
+		_, err = conn.Exec(context.Background(), string(query))
+
+		if err != nil {
+			fmt.Println("Error creating User table")
+		} else {
+			fmt.Println("Success creating User table")
+		}
+
+	}
+}
+
+func (s *Server) getDatabases() map[string]bool {
 	var names map[string]bool = make(map[string]bool)
+	// Don't use connection pool, because we havn't set it up yet
 	conn, err := s.getConnectionNoDatabase()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -100,13 +147,35 @@ func (s Server) getDatabases() map[string]bool {
 	return names
 }
 
-//NewServer Creates a new server object from env variables
-func (s Server) NewServer() ServerI {
-	var retVal Server = Server{}
-	retVal.Password = os.Getenv("PGPASSWORD")
-	retVal.UserName = os.Getenv("PGUSERNAME")
-	retVal.Host = os.Getenv("PGHOST")
-	retVal.Database = os.Getenv("PGDB")
-	retVal.Port = os.Getenv("PGPORT")
-	return retVal
+func (s *Server) getTables() map[string]bool {
+	var names map[string]bool = make(map[string]bool)
+	conn, err := s.Pool.Acquire(context.Background())
+	//conn, err := s.getConnectionNoDatabase()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		return names
+	}
+	defer conn.Release()
+
+	rows, err := conn.Query(context.Background(), "SELECT tablename FROM pg_catalog.pg_tables;")
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			fmt.Println("error")
+			break
+		} else {
+			fmt.Println("name:", name)
+		}
+		names[name] = true
+
+	}
+
+	return names
 }

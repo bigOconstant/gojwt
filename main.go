@@ -17,8 +17,9 @@ func main() {
 	})
 	tokenString, err := token.SignedString([]byte("ducksauce"))
 	fmt.Println(tokenString, err)
-	var i server.ServerI = server.Server{}.NewServer()
-	i.InitDataBase()
+	var S = server.Server{}
+	var i server.ServerI = &S
+	i.Init()
+	//i.InitDataBase()
 
-	i.GetConnection()
 }
