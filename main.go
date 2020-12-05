@@ -2,12 +2,35 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/gojwt/models"
 	"github.com/gojwt/server"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/dgrijalva/jwt-go"
 )
+
+func hashAndSalt(pwd []byte) string {
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(hash)
+}
+
+func comparePasswords(hashedPwd string, plainPwd []byte) bool {
+	byteHash := []byte(hashedPwd)
+
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
 
 func main() {
 	fmt.Println("hello world")
@@ -19,7 +42,19 @@ func main() {
 	fmt.Println(tokenString, err)
 	var S = server.Postgres{}
 	var i server.ServerI = &S
-	i.Init()
-	//i.InitDataBase()
+	err = i.Init()
+	if err != nil {
+		println(err.Error())
+	}
+	var m map[string]string
+	m = make(map[string]string)
+	m["firstname"] = "caleb"
+	m["lastname"] = "mccarthy"
+	var usr models.User = models.User{Id: 0, Username: "andrew", Password: hashAndSalt([]byte("testpassword")), Email: "duck@ducksauce.com", Data: m}
+
+	err = i.CreateUser(&usr)
+	if err != nil {
+		println(err.Error())
+	}
 
 }

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/gojwt/models"
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -203,4 +204,26 @@ func (s *Postgres) getTables() map[string]bool {
 	}
 
 	return names
+}
+
+/*
+
+Id       string      `json:"id"`
+	Username string      `json:"username"`
+	Email    string      `json:"email"`
+	Data     interface{} `json:"data,omitempty"` //Unstructured jsonb data. What ever someone wants to store.
+}
+*/
+func (s *Postgres) CreateUser(usr *models.User) (err error) {
+	conn, err := s.Pool.Acquire(context.Background())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		return err
+	}
+	defer conn.Release()
+
+	_, err = conn.Exec(context.Background(), "insert into users  (username,password, email, data) values($1,$2,$3,$4)", usr.Username, usr.Password, usr.Email, usr.DataToJson())
+
+	return err
 }
