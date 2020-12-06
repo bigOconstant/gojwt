@@ -71,6 +71,8 @@ func main() {
 
 	} else {
 		models.CreateClaimFromTokenString(jwtstring)
+
+		i.SaveTokenForUser(returnedUser, jwtstring)
 	}
 
 }

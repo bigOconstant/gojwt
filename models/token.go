@@ -2,7 +2,7 @@ package models
 
 import (
 	"errors"
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -31,32 +31,33 @@ func CreateTokenClaims(usr User) (signedToken string,err error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	signedToken, err = token.SignedString([]byte("secureSecretText"))
+	signedToken, err = token.SignedString([]byte(os.Getenv("SECRETKEY")))
 	return signedToken, err
 }
 
-func  CreateClaimFromTokenString(input string) error {
+func  CreateClaimFromTokenString(input string) (usr User, err error) {
 	token, err := jwt.ParseWithClaims(
 		input,
 		&TokenClaims{},
 		func(token *jwt.Token) (interface{},error) {
-			return []byte("secureSecretText"),nil	
+			return []byte(os.Getenv("SECRETKEY")),nil	
 		},	
 	)
 	if err != nil {
-		return err
+		return User{},err
 	}
 	claims, ok := token.Claims.(*TokenClaims)
 	if !ok {
-		return errors.New("Couldn't parse claims")
+		return User{},errors.New("Couldn't parse claims")
 	}
 
 	if claims.ExpiresAt < time.Now().UTC().Unix() {
-		return errors.New("JWT is expired")
+		return User{},errors.New("JWT is expired")
 	}
 
-	username := claims.Username
+	usr.Username = claims.Username
+	usr.Email = claims.Email
+	usr.Data = claims.Data
 
-	fmt.Println("username is ",username)
-	return nil
+	return usr,nil
 }
