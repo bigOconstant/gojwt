@@ -57,4 +57,10 @@ func main() {
 		println(err.Error())
 	}
 
+	returnedUser, err := i.GetUserByUserName("andrew")
+
+	fmt.Println("compared:", comparePasswords(returnedUser.Password, []byte("testpassword")))
+
+	fmt.Println(string(returnedUser.DataToJson()))
+
 }
