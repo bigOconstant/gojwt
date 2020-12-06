@@ -2,6 +2,7 @@ package server
 
 import "github.com/gojwt/models"
 
+/* Primary Data access contract to be fullfilled*/
 type ServerI interface {
 	Init() (err error)
 	CreateUser(*models.User) (err error)

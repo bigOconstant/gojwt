@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+//User holds the basic user object.
+//Can stick other fields in Data  interface
 type User struct {
 	Id         int         `json:"id"`
 	Username   string      `json:"username"`

@@ -20,7 +20,10 @@ type Postgres struct {
 	UserName string
 	Password string
 	Port     string
-	Pool     *pgxpool.Pool
+
+	/* Most things can be done with a thread safe connection pool
+	after the initial connection and i */
+	Pool *pgxpool.Pool
 }
 
 //GetConnection Gets connection to postgres
