@@ -63,4 +63,14 @@ func main() {
 
 	fmt.Println(string(returnedUser.DataToJson()))
 
+	jwtstring, err := models.CreateTokenClaims(returnedUser)
+	fmt.Println("jwtstring:", jwtstring)
+
+	if err != nil {
+		fmt.Println("error here", err.Error())
+
+	} else {
+		models.CreateClaimFromTokenString(jwtstring)
+	}
+
 }
