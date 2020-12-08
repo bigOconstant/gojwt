@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	rest "github.com/gojwt/Rest"
 	"github.com/gojwt/components"
+	"github.com/gojwt/database"
 	"github.com/gojwt/models"
-	"github.com/gojwt/server"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -19,8 +20,8 @@ func main() {
 	})
 	tokenString, err := token.SignedString([]byte("ducksauce"))
 	fmt.Println(tokenString, err)
-	var S = server.Postgres{}
-	var i server.ServerI = &S
+	var S = database.Postgres{}
+	var i database.PostgresI = &S
 	err = i.Init()
 	if err != nil {
 		println(err.Error())
@@ -53,5 +54,8 @@ func main() {
 
 		i.SaveTokenForUser(returnedUser, jwtstring)
 	}
+
+	Server := rest.Api{}
+	Server.Serve()
 
 }

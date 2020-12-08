@@ -7,7 +7,7 @@ import (
 //User holds  the basic user object.
 //Can stick other fields in Data interface
 type User struct {
-	Id       int         `json:"id"`
+	Id       int         `json:"id" db:id`
 	Username string      `json:"username"`
 	Password string      `json:"password,omitempty"`
 	Email    string      `json:"email"`
