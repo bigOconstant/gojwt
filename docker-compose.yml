@@ -33,16 +33,16 @@ services:
       # - ./postgres/:/sqlfiles/
       # - /var/postgresql/data:/var/lib/postgresql/data
 
-  pgweb:
-    container_name: pgweb
-    restart: always
-    image: sosedoff/pgweb
-    ports: 
-      - "8081:8081" 
-    links: 
-      - postgres:postgres  # my database container is called postgres, not db
-    environment:
-      - DATABASE_URL=postgres://postgres:password123@postgres:5432/authdatabase?sslmode=disable
-    depends_on:
-      - postgres
+  # pgweb:
+  #   container_name: pgweb
+  #   restart: always
+  #   image: sosedoff/pgweb
+  #   ports: 
+  #     - "8081:8081" 
+  #   links: 
+  #     - postgres:postgres  # my database container is called postgres, not db
+  #   environment:
+  #     - DATABASE_URL=postgres://postgres:password123@postgres:5432/authdatabase?sslmode=disable
+  #   depends_on:
+  #     - postgres
 

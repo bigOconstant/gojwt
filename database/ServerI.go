@@ -8,6 +8,5 @@ type PostgresI interface {
 	CreateUser(*models.User) (err error)
 	GetUserById(id int) (usr models.User, err error)
 	GetUserByUserName(username string) (usr models.User, err error)
-
 	SaveTokenForUser(usr models.User, token string) error
 }
