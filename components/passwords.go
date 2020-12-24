@@ -6,10 +6,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Password struct{}
+type Password struct{ Password string }
 
-func (p Password) HashAndSalt(pwd []byte) string {
-	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+func (p Password) HashAndSalt() string {
+	hash, err := bcrypt.GenerateFromPassword([]byte(p.Password), bcrypt.MinCost)
 	if err != nil {
 		log.Println(err)
 	}
@@ -17,8 +17,8 @@ func (p Password) HashAndSalt(pwd []byte) string {
 	return string(hash)
 }
 
-func (p Password) ComparePasswords(hashedPwd string, plainPwd []byte) bool {
-	byteHash := []byte(hashedPwd)
+func (p Password) ComparePasswords(plainPwd []byte) bool {
+	byteHash := []byte(p.Password)
 
 	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
 	if err != nil {

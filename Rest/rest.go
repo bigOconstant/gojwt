@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gojwt/components"
 	"github.com/gojwt/database"
+	"github.com/gojwt/models"
 	"github.com/gorilla/mux"
 )
 
@@ -82,13 +84,24 @@ func (self *Api) createUser(w http.ResponseWriter, r *http.Request) {
 	var i CreateUser
 	json.NewDecoder(r.Body).Decode(&i)
 	fmt.Println("user's email:", i.Email)
-	usr, err := self.DB.GetUserByUserName(i.Username)
-	if err != nil && err.Error() == "no rows in result set" {
 
-		fmt.Println("user does not exist")
+	userExist := self.DB.UserExist(i.Username)
+	if userExist {
+		fmt.Println("user exist")
+		fmt.Fprintf(w, "User already exist")
 
+	} else {
+		fmt.Println("User doesn't exist. Creating user")
+		pw := components.Password{Password: i.Password}
+		var User models.User = models.User{Username: i.Username,
+			Password: pw.HashAndSalt(),
+			Email:    i.Email,
+			Data:     i.Data,
+		}
+		err := self.DB.CreateUser(&User)
+		fmt.Println(err)
+		fmt.Fprintf(w, "user didn't exist Creating it")
 	}
-	fmt.Println(usr.Id)
 
 }
 
