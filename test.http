@@ -5,3 +5,15 @@ content-type: application/json
     "username": "gameofthrones",
     "password": "swordfish"
 }
+
+###
+
+POST http://localhost:3000/CreateUser HTTP/1.1
+content-type: application/json
+
+{
+    "username": "gameofthrones",
+    "password": "swordfish",
+    "email": "mcCmasters@gmail.com",
+    "data":""
+}

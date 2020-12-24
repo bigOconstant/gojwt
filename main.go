@@ -2,6 +2,7 @@ package main
 
 import (
 	rest "github.com/gojwt/Rest"
+	"github.com/gojwt/database"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	// tokenString, err := token.SignedString([]byte("ducksauce"))
 	// fmt.Println(tokenString, err)
 	// var S = database.Postgres{}
-	// var i database.PostgresI = &S
+	// var i bbbb = &S
 	// err = i.Init()
 	// if err != nil {
 	// 	println(err.Error())
@@ -43,11 +44,11 @@ func main() {
 
 	// } else {
 	// 	models.CreateClaimFromTokenString(jwtstring)
-
 	// 	i.SaveTokenForUser(returnedUser, jwtstring)
 	// }
+	var S = database.Postgres{} //t
 
-	Server := rest.Api{}
+	Server := rest.Api{DB: &S}
 	Server.Serve()
 
 }

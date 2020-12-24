@@ -175,6 +175,33 @@ func (s *Postgres) getDatabases() map[string]bool {
 	return names
 }
 
+func (s *Postgres) UserExist(username string) bool {
+	rows, err := s.Pool.Query(context.Background(), "select id from users where username = $1", username)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to query users: %v\n", err)
+		return false
+	}
+	var id int = 0
+
+	for rows.Next() {
+
+		err := rows.Scan(&id)
+		if err != nil {
+			fmt.Println("error")
+			return false
+		} else {
+			fmt.Println("id:", id)
+		}
+
+	}
+	if id != 0 {
+		return true
+	} else {
+		return false
+	}
+
+} // to do implement this
+
 func (s *Postgres) getTables() map[string]bool {
 	var names map[string]bool = make(map[string]bool)
 	conn, err := s.Pool.Acquire(context.Background())
