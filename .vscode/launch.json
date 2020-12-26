@@ -14,7 +14,14 @@
         "env": {},
         "args": []
     },
-    
-   
+    {
+        "name": "Debug Local",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "program": "${workspaceRoot}/main.go",
+        "env": {"SECRETKEY":"FISHSAUCE","PGPASSWORD":"password123","PGUSERNAME":"postgres","PGHOST":"localhost","PGPORT":5431,"PGDB":"authdatabase"},
+        "args": []
+    },
    ]
 }

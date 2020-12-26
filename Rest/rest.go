@@ -45,6 +45,11 @@ type LoginResponse struct {
 	Token   string `json:"token"`
 }
 
+type CreateUserResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 func (self *Api) homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>HomePage</h1>")
 	fmt.Println("Endpoint Hit: homePage")
@@ -80,15 +85,15 @@ CreateUser: steps,
 3. if Create user send message saing create user operation was a success
 */
 func (self *Api) createUser(w http.ResponseWriter, r *http.Request) {
+	response := CreateUserResponse{Success: false, Message: ""}
 	fmt.Println("Calling create user")
 	var i CreateUser
 	json.NewDecoder(r.Body).Decode(&i)
-	fmt.Println("user's email:", i.Email)
 
 	userExist := self.DB.UserExist(i.Username)
 	if userExist {
 		fmt.Println("user exist")
-		fmt.Fprintf(w, "User already exist")
+		response.Message = "user exist"
 
 	} else {
 		fmt.Println("User doesn't exist. Creating user")
@@ -99,9 +104,17 @@ func (self *Api) createUser(w http.ResponseWriter, r *http.Request) {
 			Data:     i.Data,
 		}
 		err := self.DB.CreateUser(&User)
-		fmt.Println(err)
-		fmt.Fprintf(w, "user didn't exist Creating it")
+		if err == nil {
+			response.Message = "User Created"
+			response.Success = true
+		} else {
+			response.Message = "Error Creating user"
+			fmt.Println(err)
+		}
+
 	}
+	msg, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(msg))
 
 }
 
