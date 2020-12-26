@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 type LoginResponse struct {
 	Success bool   `json:"success"`
+	Message string `json:"message"`
 	Token   string `json:"token"`
 }
 
@@ -64,17 +65,49 @@ login: steps
 
 */
 func (self *Api) login(w http.ResponseWriter, r *http.Request) {
+	response := LoginResponse{Success: false, Message: "", Token: ""}
+
 	fmt.Println("calling login")
 	var i LoginIn
 	json.NewDecoder(r.Body).Decode(&i)
 
 	usr, err := self.DB.GetUserByUserName(i.Username)
 	if err != nil {
+		response.Message = "error getting user"
 		fmt.Println("error getting user")
+		msg, _ := json.Marshal(response)
+		fmt.Fprintf(w, string(msg))
+		return
 	}
 
-	fmt.Println("userid:", usr.Id)
-	fmt.Fprintf(w, "username: %s ,password:%s\n", i.Username, i.Password)
+	matches := components.Password{Password: usr.Password}.ComparePasswords([]byte(i.Password))
+
+	if matches {
+		fmt.Println("Password matches login user")
+		response.Message = "Password matches"
+		tokenC, err := models.CreateTokenClaims(usr)
+		if err == nil {
+			response.Token = tokenC
+			response.Success = true
+			response.Message = "Token Creation Success"
+			err := self.DB.SaveTokenForUser(usr, tokenC)
+			if err != nil {
+				response.Success = false
+				response.Message = "Token Creation Failed"
+				response.Token = ""
+			}
+
+		} else {
+			response.Message = "error creating token"
+			fmt.Println(err)
+		}
+
+	} else {
+		response.Message = "password doesn't match"
+	}
+
+	msg, _ := json.Marshal(response)
+	fmt.Fprintf(w, string(msg))
 
 }
 
@@ -97,9 +130,9 @@ func (self *Api) createUser(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		fmt.Println("User doesn't exist. Creating user")
-		pw := components.Password{Password: i.Password}
+		pw := components.Password{Password: i.Password}.HashAndSalt()
 		var User models.User = models.User{Username: i.Username,
-			Password: pw.HashAndSalt(),
+			Password: pw,
 			Email:    i.Email,
 			Data:     i.Data,
 		}

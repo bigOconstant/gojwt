@@ -16,6 +16,7 @@ func TestComparePasswords(t *testing.T) {
 	compared := Password{usr.Password}.ComparePasswords([]byte("testpassword"))
 	if compared {
 		t.Log("True")
+		t.Error("Does work")
 	} else {
 		t.Error("Doesn't work")
 	}
